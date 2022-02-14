@@ -191,7 +191,7 @@ debug)
 	fi
   ;;
 	*)
-	Warning "Usage: fivem {update|start|stop|restart|status|console|debug}"
+	Warning "Usage: /fivem.sh {update|start|stop|restart|status|console|debug}"
   exit 1
   ;;
 esac
