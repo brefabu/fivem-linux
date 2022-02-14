@@ -1,34 +1,24 @@
 #!/bin/bash
-# fivemLinux by ZerefGG @alttabgaming.com
-# if you have any suggestions or improvements, don't hesitate to send your pull requests
-# https://github.com/Zerefdev/fivemLinux
-
-### Start variables
-# Version
-currentVersion="2.0"
 
 # Colors functions
-function defaultMsg() {
-  echo -e "\\e[0m${*}\\e[0m"
+function Message() {
+  echo -e "\\e[0m[FiveM] ${*}\\e[0m"
 }
-function greenMsg() {
-  echo -e "\\e[0;32m${*}\\e[0m"
+function Success() {
+  echo -e "\\e[0;32m[FiveM] ${*}\\e[0m"
 }
-function redMsg() {
-  echo -e "\\e[0;31m${*}\\e[0m"
+function Error() {
+  echo -e "\\e[0;31m[FiveM] ${*}\\e[0m"
 }
-function yellowMsg() {
-  echo -e "\\e[0;33m${*}\\e[0m"
-}
-function cyanMsg() {
-  echo -e "\\e[0;36m${*}\\e[0m"
+function Warning() {
+  echo -e "\\e[0;33m[FiveM] ${*}\\e[0m"
 }
 
 # Restart message
-  restartMsg="Server Restart in $2 seconds!"
+restartMsg="Server Restart in $2 seconds!"
 
 # Countdown function
-function countdown () {
+function countdown() {
 	cd=$1 # seconds
 	until [ $cd -lt 1 ]; do
 		printf "$cd "
@@ -48,48 +38,45 @@ dataPath="none"
 screen="none"
 
 # Screen
-	if [ "$screen" = "none" ]; then
-		yellowMsg "What do you want to name the screen session?"
-		cyanMsg "Example: fivem"
-    read input1
-	  screenName=$input1
-    sed -i "48s@none@$screenName@" $0
-	fi 
+if [ "$screen" = "none" ]; then
+	Message "What's the name of the server? [PRESS ENTER]"
+	Message "Example: fivem-server"
+	read input1
+	screenName=$input1
+	sed -i "34s@none@$screenName@" $0
+fi 
 
-# Server Path  
-	if [ "$fivemPath" = "none" ]; then
-		yellowMsg "Enter your FiveM Server Files Path and press [ENTER]"
-		cyanMsg "Example: /home/username/server"
-    read input2
-	  fmp=$input2
-    sed -i "44s@none@$fmp@" $0
-	fi 
+# Screen
+if [ "$fivemPath" = "none" ]; then
+	Message "What's the name of the server? [PRESS ENTER]"
+	Message "Example: fivem-server"
+	read input2
+	fmp=$input2
+	sed -i "35s@none@$fmp@" $0
+fi 
 
 # Data Path 
-	if [ "$dataPath" = "none" ]; then
-		yellowMsg "Enter your FiveM Server Data Path and press [ENTER]"
-		cyanMsg "Example: /home/username/server-data"
-    read input3
-	  dap=$input3
-    sed -i "45s@none@$dap@" $0
-		greenMsg "Done."
-		echo '##############################
-###
-# Usage: 
-# - ./fivem.sh update (updates fivemLinux to latest version)
-# - ./fivem.sh start (starts the server in silent mode)
-# - ./fivem.sh stop (stops the server)
-# - ./fivem.sh restart X (restarts the server after X seconds)
-# - ./fivem.sh cmd (allows you to send commands via the console)
-# - ./fivem.sh debug (starts the server in debug mode)
-###
-##############################'
+if [ "$dataPath" = "none" ]; then
+	Message "What's the path of server-data? [PRESS ENTER]"
+	Message "Example: /home/username/server-data"
+	read input3
+	dap=$input3
+	sed -i "38s@none@$dap@" $0
+	Success "Done."
+	echo   '#################################################################
+			# Usage: 														#
+			# - fivem start 	( Starts the server in silent mode.		)	#
+			# - fivem stop  	( Stops the server.						)	#
+			# - fivem restart	( Restarts the server.					)	#
+			# - fivem console 	( Sends you to console.					)	#
+			# - fivem debug 	( Starts the server in debug mode.		)	#
+			#################################################################'
 	exit 0
-	fi
+fi
 
 # Check if a server with same screen name is already running
 cd $dataPath
-isOn(){
+isOn() {
 	screen -S "$screen" -X select ; return $?
 }
 ### End variables
@@ -97,121 +84,84 @@ isOn(){
 ### Start main script
 
 case "$1" in
-# Update
-update)
-	latestVersion=$(wget --no-check-certificate --timeout=60 -qO - https://raw.githubusercontent.com/Zerefdev/fivemLinux/master/fivem.sh | grep -Po '(?<=currentVersion=")([0-9]\.[0-9]+)')
-
-	if [ "$(printf "${latestVersion}\\n${currentVersion}" | sort -V | tail -n 1)" != "$currentVersion" ]; then
-		if isOn; then
-			redMsg "You are using an outdated version ${currentVersion}"
-			sleep 1
-			yellowMsg "You need to stop the server before upgrading to fivemLinux ${latestVersion}"
-		else
-			redMsg "You are using an outdated version ${currentVersion}"
-			sleep 1
-			yellowMsg "Please wait! Currently upgrading fivemLinux..."
-			sleep 1
-			mv $file $file.save
-			greenMsg "Backup saved (fivem.sh.save)"
-			sleep 1
-			wget https://raw.githubusercontent.com/Zerefdev/fivemLinux/master/fivem.sh
-			sleep 2
-			if [ -f "fivem.sh" ]; then
-				dos2unix fivem.sh
-				sleep 1
-				chmod +x fivem.sh
-				mv fivem.sh $filePath
-				greenMsg "Done."
-				sleep 1
-				bash $filePath/fivem.sh
-			else
-				redMsg "Something went wrong."
-			fi
-		fi
-		else
-			sleep 1
-			greenMsg "You are using the latest fivemLinux version ${latestVersion}"
-	fi
-	;;
-
 # Start  
 start)
 	if isOn; then
-	redMsg "Server already started"
+		Error "Server already started"
 	else
-		yellowMsg "Server is starting..."
+		Message "Server is starting..."
 		screen -dmS $screen $fivemPath/run.sh +exec server.cfg
 		sleep 1
-		greenMsg "Server started."
+		Success "Server started."
 	fi
-  ;;
+;;
 # Stop
-  stop)
+stop)
 	if isOn; then
 		screen -S $screen -X quit
 		sleep 1
-		redMsg "Server stopped."
+		Success "Server stopped."
 		sleep 1
-		yellowMsg "Deleting the cache..."
+		Message "Deleting the cache..."
+		
 		if [ -d "$dataPath/cache" ]; then
 			rm -Rf $dataPath/cache/
 			sleep 2
-			greenMsg "Cache deleted."
+			Success "Cache deleted."
 		else 
-		redMsg "Cache directory not found."
+			Warning "Cache directory not found."
 		fi
 	else
-		redMsg "Server not started."
-		yellowMsg "Use : $0 start/debug (to start the server)"
+		Error "Server not started."
+		Warning "Use : $0 start/debug (to start the server)"
 	fi
-  ;;
+;;
 
 # Restart
-  restart)
+restart)
 	if isOn; then
 		if [ -z "$2" ]; then
 			screen -S $screen -X quit
 			sleep 1
-			cyanMsg "Server stopped."
+			Success "Server stopped."
 			sleep 1
-			yellowMsg "Server is starting..."
+			Message "Server is starting..."
 			screen -dmS $screen $fivemPath/run.sh +exec server.cfg
 			sleep 2
-			greenMsg "Server started."
+			Success "Server started."
 		else
 			screen -S $screen -X stuff "\r\rsay $restartMsg\rsay $restartMsg\rsay $restartMsg\r";
-			yellowMsg "[CTRL+C] to cancel"
+			Warning "[CTRL+C] to cancel"
 			countdown $2
 			screen -S $screen -X quit
 			sleep 1
-			cyanMsg "Server stopped."
+			Success "Server stopped."
 			sleep 1
-			yellowMsg "Server is starting..."
+			Message "Server is starting..."
 			screen -dmS $screen $fivemPath/run.sh +exec server.cfg
 			sleep 2
-			greenMsg "Server started"
+			Success "Server started"
 		fi
 	else
-		redMsg "Server not started"
-		yellowMsg "Use : $0 start/debug (to start the server)"
+		Error "Server not started"
+		Warning "Use : $0 start/debug (to start the server)"
 	fi
-	;;
+;;
 
 # Status
-	status)
+status)
 	if isOn; then
-		greenMsg "Server is running"
+		Message "Server is running."
 	else
-		redMsg "Server is not running."
+		Message "Server is not running."
 	fi
-	;;
+;;
 
-# Command
-	cmd)
+# Console
+console)
 	if isOn; then
 		if [ -z "$2" ]; then
-			yellowMsg "Usage: $0 cmd \"command to run\"."
-			read -r -p "Do you want to reattach to the screen instead? [y/N]" useScreen
+			read -r -p "Do you want to reattach to the screen instead? [y/n]" useScreen
 			case $useScreen in
 				[yY])
 				screen -dr $screen
@@ -227,21 +177,21 @@ start)
 		fi
 	else
 	 	sleep 1
-		redMsg "Server is not running."
+		Error "Server is not running."
 	fi
-  ;;
+;;
 	
 # Start in debug mode
-	debug)
+debug)
 	if isOn; then
-		redMsg "Server is already started"
+		Error "Server is already started."
 	else
-		yellowMsg "Server is starting in debug mode..."
+		Warning "Server is starting in debug mode..."
 		screen -S $screen $fivemPath/run.sh +exec server.cfg
 	fi
   ;;
 	*)
-	yellowMsg "Usage: $0 {update|start|stop|restart|status|cmd|debug}"
+	Warning "Usage: fivem {update|start|stop|restart|status|console|debug}"
   exit 1
   ;;
 esac
